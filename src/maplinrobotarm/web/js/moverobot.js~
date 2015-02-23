@@ -1,7 +1,0 @@
-// Move Robot Script
-$.ajax({
-    url: 'http://'+window.location.hostname+':8787/robot/moveto/',
-    type: 'GET',
-    data: 'ID=1&Name=John&Age=10', // or $('#myform').serializeArray()
-    success: function() { alert('PUT completed'); }
-});

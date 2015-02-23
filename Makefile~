@@ -15,7 +15,7 @@ default: snappy-build
 snappy-build:
 	snappy build .
 
-gopkg := maplinrobotarm
+gopkg := golang-static-http
 
 build-go:
 	# not using "go install" as that would write to bin/$name which is
