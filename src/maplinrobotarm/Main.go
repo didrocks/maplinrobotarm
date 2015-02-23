@@ -11,11 +11,12 @@ import (
 )
 
 type RobotPos struct {
-	grips    int
-	wrist    int
-	elbow    int
-	shoulder int
-	base     int
+	Grips    int
+	Wrist    int
+	Elbow    int
+	Shoulder int
+	Base     int
+	Led      int
 }
 
 const (
@@ -26,20 +27,11 @@ const (
 	basemax     = 100
 )
 
-type Move struct {
-	sleep int
-	pos   RobotPos
-	led   int
-}
-
-type Moves struct {
-	moves []Move
-}
-
 var robotpos RobotPos
+var loopstop bool
 
 func main() {
-	robotpos = RobotPos{grips: 3, wrist: 10, elbow: 32, shoulder: 30, base: 50}
+	robotpos = RobotPos{Grips: 3, Wrist: 10, Elbow: 32, Shoulder: 30, Base: 50, Led: 0}
 	fmt.Println("Robot Postion:", robotpos)
 	gorest.RegisterService(new(RobotService))
 	http.Handle("/", gorest.Handle())
@@ -53,29 +45,50 @@ type RobotService struct {
 	// call /robot/move/{grips 0,1,2}/{wrist:0,1,2}/{elbow 0,1,2}/{shoulder 0,1,2}/{base 0,1,2}/{led 0,2}/{testmax true,fals}
 	move gorest.EndPoint `method:"GET" path:"/move/{Grips:int}/{Wrist:int}/{Elbow:int}/{Shoulder:int}/{Base:int}/{Led:int}/{Testmax:bool}" output:"string"`
 	// call /robot/set/{grips 0-3}/{wrist 0-50}/{elbow 0-50}/{shoulder 0-50}/{base 0-50}
-	set gorest.EndPoint `method:"GET" path:"/set/{Grips:int}/{Wrist:int}/{Elbow:int}/{Shoulder:int}/{Base:int}" output:"string"`
-	// call /robot/set/{grips 0-3}/{wrist 0-50}/{elbow 0-50}/{shoulder 0-60}/{base 0-120}/{led 0,2}
+	set gorest.EndPoint `method:"GET" path:"/set/{Grips:int}/{Wrist:int}/{Elbow:int}/{Shoulder:int}/{Base:int}/{Led:int}" output:"string"`
+	// call /robot/moveto/{grips 0-3}/{wrist 0-50}/{elbow 0-50}/{shoulder 0-60}/{base 0-120}/{led 0,2}
 	moveto gorest.EndPoint `method:"GET" path:"/moveto/{Grips:int}/{Wrist:int}/{Elbow:int}/{Shoulder:int}/{Base:int}/{Led:int}" output:"string"`
-	// call /robot/play/ moves contain array of sleep, robotpos
-	play gorest.EndPoint `method:"POST" path:"/play/" postdata:"string"`
+	// call /robot/play/{sleep: seconds}/{loop: true/false} moves contain array of robotpos and sleeps between the steps
+	play gorest.EndPoint `method:"POST" path:"/play/{Sleep:int}/{Loop:bool}" postdata:"string"`
+	// call /robot/endloop
+	endloop gorest.EndPoint `method:"GET" path:"/endloop" output:"string"`
 }
 
-func (serv RobotService) Play(moves string) {
+func (serv RobotService) Play(moves string, sleep int, loop bool) {
+	fmt.Println("Play:", moves)
+	byt := []byte(moves)
+	dat := []RobotPos{}
+	err := json.Unmarshal(byt, &dat)
 
-	pos := RobotPos{grips: 3, wrist: 10, elbow: 32, shoulder: 30, base: 50}
-	move := Move{sleep: 15, pos: pos, led: 2}
-	ms := []Move{move}
-	mvs := Moves{ms}
-	b, err := json.Marshal(mvs)
-	fmt.Println("Play:", moves, string(b), err)
+	if err != nil {
+		fmt.Println("Error in JSON", err)
+		serv.ResponseBuilder().SetResponseCode(404).Overide(true) //Overide causes the entity returned by the method to be ignored. Other wise it would send back zeroed object
+		return
+	}
 
-	/*for _, move := range moves.moves {
-		if move.sleep > 0 {
-			time.Sleep(time.Duration(move.sleep) * time.Second)
-		} else {
-			serv.Moveto(move.pos.grips, move.pos.wrist, move.pos.elbow, move.pos.shoulder, move.pos.base, move.led)
+	loopstop = false
+	for !loopstop {
+		for _, move := range dat {
+			serv.Moveto(move.Grips, move.Wrist, move.Elbow, move.Shoulder, move.Base, move.Led)
 		}
-	}*/
+		if sleep > 0 {
+			fmt.Println("Sleeping:", sleep)
+			time.Sleep(time.Duration(sleep) * time.Second)
+		}
+		fmt.Println("Loop:", loop)
+		if !loop {
+			loopstop = true
+		}
+		if loopstop {
+			serv.Moveto(3, 10, 32, 30, 50, 0)
+		}
+	}
+
+	return
+}
+
+func (serv RobotService) Endloop() (code string) {
+	loopstop = true
 	return
 }
 
@@ -90,13 +103,14 @@ func (serv RobotService) Move(Grips int, Wrist int, Elbow int, Shoulder int, Bas
 	return
 }
 
-func (serv RobotService) Set(Grips int, Wrist int, Elbow int, Shoulder int, Base int) (code string) {
+func (serv RobotService) Set(Grips int, Wrist int, Elbow int, Shoulder int, Base int, Led int) (code string) {
 	fmt.Println("Set", Grips, Wrist, Elbow, Shoulder, Base)
-	robotpos.base = Base
-	robotpos.elbow = Elbow
-	robotpos.grips = Grips
-	robotpos.shoulder = Shoulder
-	robotpos.wrist = Wrist
+	robotpos.Base = Base
+	robotpos.Elbow = Elbow
+	robotpos.Grips = Grips
+	robotpos.Shoulder = Shoulder
+	robotpos.Wrist = Wrist
+	robotpos.Led = Led
 	code = "0"
 	return
 }
@@ -104,8 +118,8 @@ func (serv RobotService) Set(Grips int, Wrist int, Elbow int, Shoulder int, Base
 // we know where the robot arm is from robotpos, now we need to calculate how many times
 // we need to move each element to get to the desired final position and move it there
 func (serv RobotService) Moveto(Grips int, Wrist int, Elbow int, Shoulder int, Base int, Led int) (code string) {
-	fmt.Println("MoveTo", Grips, Wrist, Elbow, Shoulder, Base)
-	movmt := []int{robotpos.grips - Grips, robotpos.wrist - Wrist, robotpos.elbow - Elbow, robotpos.shoulder - Shoulder, robotpos.base - Base}
+	fmt.Println("MoveTo", Grips, Wrist, Elbow, Shoulder, Base, Led)
+	movmt := []int{robotpos.Grips - Grips, robotpos.Wrist - Wrist, robotpos.Elbow - Elbow, robotpos.Shoulder - Shoulder, robotpos.Base - Base}
 	max := Abs(movmt[0]) // assume first value is the smallest
 	for _, value := range movmt {
 		if Abs(value) > max {
@@ -165,22 +179,22 @@ func GetLedCode(Led int) (code int) {
 func GetBaseCode(Base int, testmax bool) (code int) {
 	switch {
 	case Base >= 2:
-		if testmax && robotpos.base+1 > basemax {
+		if testmax && robotpos.Base+1 > basemax {
 			fmt.Println("Reached max of base")
 			Base = 0
 		} else {
 			if testmax {
-				robotpos.base = robotpos.base + 1
+				robotpos.Base = robotpos.Base + 1
 			}
 			Base = 2
 		}
 	case Base == 1:
-		if testmax && robotpos.base-1 < 0 {
+		if testmax && robotpos.Base-1 < 0 {
 			fmt.Println("Reached min of base")
 			Base = 0
 		} else {
 			if testmax {
-				robotpos.base = robotpos.base - 1
+				robotpos.Base = robotpos.Base - 1
 			}
 			Base = 1
 		}
@@ -193,22 +207,22 @@ func GetBaseCode(Base int, testmax bool) (code int) {
 func GetArmCode(Grips int, Wrist int, Elbow int, Shoulder int, testmax bool) (code int) {
 	switch {
 	case Grips >= 2:
-		if testmax && robotpos.grips+1 > gripsmax {
+		if testmax && robotpos.Grips+1 > gripsmax {
 			fmt.Println("Reached max of grips")
 			Grips = 0
 		} else {
 			if testmax {
-				robotpos.grips = robotpos.grips + 1
+				robotpos.Grips = robotpos.Grips + 1
 			}
 			Grips = 2
 		}
 	case Grips == 1:
-		if testmax && robotpos.grips-1 < 0 {
+		if testmax && robotpos.Grips-1 < 0 {
 			fmt.Println("Reached min of grips")
 			Grips = 0
 		} else {
 			if testmax {
-				robotpos.grips = robotpos.grips - 1
+				robotpos.Grips = robotpos.Grips - 1
 			}
 			Grips = 1
 		}
@@ -217,22 +231,22 @@ func GetArmCode(Grips int, Wrist int, Elbow int, Shoulder int, testmax bool) (co
 	}
 	switch {
 	case Wrist >= 2:
-		if testmax && robotpos.wrist+1 > wristmax {
+		if testmax && robotpos.Wrist+1 > wristmax {
 			fmt.Println("Reached max of wrist")
 			Wrist = 0
 		} else {
 			if testmax {
-				robotpos.wrist = robotpos.wrist + 1
+				robotpos.Wrist = robotpos.Wrist + 1
 			}
 			Wrist = 4
 		}
 	case Wrist == 1:
-		if testmax && robotpos.wrist-1 < 0 {
+		if testmax && robotpos.Wrist-1 < 0 {
 			fmt.Println("Reached min of wrist")
 			Wrist = 0
 		} else {
 			if testmax {
-				robotpos.wrist = robotpos.wrist - 1
+				robotpos.Wrist = robotpos.Wrist - 1
 			}
 			Wrist = 8
 		}
@@ -241,22 +255,22 @@ func GetArmCode(Grips int, Wrist int, Elbow int, Shoulder int, testmax bool) (co
 	}
 	switch {
 	case Elbow >= 2:
-		if testmax && robotpos.elbow+1 > elbowmax {
+		if testmax && robotpos.Elbow+1 > elbowmax {
 			fmt.Println("Reached max of elbow")
 			Elbow = 0
 		} else {
 			if testmax {
-				robotpos.elbow = robotpos.elbow + 1
+				robotpos.Elbow = robotpos.Elbow + 1
 			}
 			Elbow = 16
 		}
 	case Elbow == 1:
-		if testmax && robotpos.elbow-1 < 0 {
+		if testmax && robotpos.Elbow-1 < 0 {
 			fmt.Println("Reached min of elbow")
 			Elbow = 0
 		} else {
 			if testmax {
-				robotpos.elbow = robotpos.elbow - 1
+				robotpos.Elbow = robotpos.Elbow - 1
 			}
 			Elbow = 32
 		}
@@ -265,22 +279,22 @@ func GetArmCode(Grips int, Wrist int, Elbow int, Shoulder int, testmax bool) (co
 	}
 	switch {
 	case Shoulder >= 2:
-		if testmax && robotpos.shoulder+1 > shouldermax {
+		if testmax && robotpos.Shoulder+1 > shouldermax {
 			fmt.Println("Reached max of shoulder")
 			Shoulder = 0
 		} else {
 			if testmax {
-				robotpos.shoulder = robotpos.shoulder + 1
+				robotpos.Shoulder = robotpos.Shoulder + 1
 			}
 			Shoulder = 64
 		}
 	case Shoulder == 1:
-		if testmax && robotpos.shoulder-1 < 0 {
+		if testmax && robotpos.Shoulder-1 < 0 {
 			fmt.Println("Reached min of shoulder")
 			Shoulder = 0
 		} else {
 			if testmax {
-				robotpos.shoulder = robotpos.shoulder - 1
+				robotpos.Shoulder = robotpos.Shoulder - 1
 			}
 			Shoulder = 128
 		}
@@ -312,12 +326,14 @@ func Do(arm byte, base byte, led byte) (int, error) {
 	}()
 	if robotDesc == nil {
 		fmt.Println("Could not find Maplin Robot Arm")
-		return 0, Error.ERROR_OTHER
+		var reterr error
+		return 0, reterr
 	}
 
 	if err != nil {
 		fmt.Println("Some devices had an error: %s", err)
-		return 0, Error.ERROR_OTHER
+		var reterr error
+		return 0, reterr
 	}
 	devs[0].Control(0x40, 6, 0x100, 0, command)
 	time.Sleep(150 * time.Millisecond)

@@ -1,0 +1,12 @@
+name: maplin-robot-arm
+version: 1.0.0
+vendor: Maarten Ectors <maarten@ectors.com>
+services:
+ - name: robot-backend
+   start: bin/Main
+ - name: robot-frontend
+   start: bin/Web
+integration:
+    maplin-robot-arm:
+        apparmor: meta/maplin-robot-arm.apparmor
+

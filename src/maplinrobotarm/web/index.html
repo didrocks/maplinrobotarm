@@ -123,16 +123,16 @@
 	  <!-- Default panel contents -->
 	  <div class="panel-heading">Robot Demo</div>
 	  <div class="panel-body">
-	    <p>Paste the demo script you want the robot to follow below. Press play to play the script and stop to stop the demo. Stop will finalise the current iteration of the script and return to the init position.</p>
+	    <p>Paste the demo script you want the robot to follow below. Press play to play the script and stop to stop the demo. Stop will finalise the current iteration of the script and return to the init position.<br>Sample: [{"Grips":2,"Wrist":10,"Elbow":32,"Shoulder":30,"Base":50,"Led":1},{"Grips":1,"Wrist":5,"Elbow":32,"Shoulder":30,"Base":50,"Led":1}]</p>
 	  </div>
 		<table class="table">
-             		<tr><td colspan="2"><textarea class="form-control" rows="10" id="demoscript"></textarea></td></tr>
+             		<tr><td colspan="2"><textarea class="form-control" rows="10" id="demoscript" value="[]"></textarea></td></tr>
 			<tr><td>Time between each script run (in seconds)</td> 
 				<td><input type="text" class="form-control" id="demotime" placeholder="60"></td></tr>
 			<tr><td>Loop script</td>            	
                 	<td><input type="checkbox" id="demoloop"></td></tr>
-             		<tr><td colspan="2"><center><button type="button" class="btn btn-success">Move</button>
-             &nbsp;<button type="button" class="btn btn-danger">Stop</button></center></td></tr>
+             		<tr><td colspan="2"><center><button type="button" class="btn btn-success" onclick="demo()">Move</button>
+             &nbsp;<button type="button" class="btn btn-danger" onclick="stopdemo()">Stop</button></center></td></tr>
 		</table>
 	  <div class="form-group">
           </div>
@@ -149,7 +149,7 @@
 	  <div class="panel-heading">Move the Robot</div>
 	  <div class="panel-body">
 	    <p>Put the final position you want the robot to move to.</p>
-            <div class="alert alert-success" role="alert">Moving to:<br>{grips:<span id="alertgrips"></span>,wrist:<span id="alertwrist"></span>,elbow:<span id="alertelbow"></span>,shoulder:<span id="alertshoulder"></span>,base:<span id="alertbase"></span>,led:<span id="alertled"></span>}</div>
+            <div class="alert alert-success" role="alert">Moving to:<br>{"Grips":<span id="alertgrips"></span>,"Wrist":<span id="alertwrist"></span>,"Elbow":<span id="alertelbow"></span>,"Shoulder":<span id="alertshoulder"></span>,"Base":<span id="alertbase"></span>,"Led":<span id="alertled"></span>}</div>
 	  </div>
 
 	  <!-- Table -->
