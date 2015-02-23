@@ -25,6 +25,3 @@ _testmain.go
 
 *.html~
 *.js~
-
-src/maplinrobotarm/Main
-src/maplinrobotarm/Web

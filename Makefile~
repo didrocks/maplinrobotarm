@@ -15,18 +15,20 @@ default: snappy-build
 snappy-build:
 	snappy build .
 
-gopkg := golang-static-http
+mra=maplinrobotarm/backend 
+mraw=maplinrobotarm/web
 
 build-go:
 	# not using "go install" as that would write to bin/$name which is
 	# where the arch-indep symlinks live
-	GOARCH=arm make build-go
-	GOARCH=arm make build-go machine=armv7l
-	go build $(gopkg)
+	#GOARCH=arm make build-go
+	#GOARCH=arm make build-go machine=armv7l	
+	go build $(mra)
+	go build $(mraw)
 	mkdir -p bin/$(triplet)
-	mv $(gopkg) bin/$(triplet)
+	mv $(mra) $(mraw) bin/$(triplet)
 
-binaries := $(shell ls /usr/lib/*/libusb*)
+binaries := $(shell ls /usr/lib/*/libusb*.so.*)
 
 copy-binaries:
 	mkdir -p bin/$(triplet)

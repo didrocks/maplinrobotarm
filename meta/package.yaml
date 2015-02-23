@@ -1,12 +1,16 @@
 name: maplin-robot-arm
 version: 1.0.0
 vendor: Maarten Ectors <maarten@ectors.com>
+icon: meta/Maplin.svg
 services:
  - name: robot-backend
-   start: bin/Main
+   start: bin/MaplinRobotArm
  - name: robot-frontend
-   start: bin/Web
+   start: bin/MaplinRobotArmWeb
 integration:
     maplin-robot-arm:
         apparmor: meta/maplin-robot-arm.apparmor
+ports:
+ required: 8787
+ required: 3000
 
