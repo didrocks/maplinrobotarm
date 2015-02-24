@@ -3,6 +3,7 @@
 *.a
 *.so
 
+/lib/*
 # Folders
 _obj
 _test
@@ -26,3 +27,5 @@ _testmain.go
 *.html~
 *.js~
 *.yaml~
+*.snap
+*~

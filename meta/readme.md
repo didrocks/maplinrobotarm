@@ -1,3 +1,2 @@
 maplin robot arm
-
-Allows you to control the Maplin Robot Arm via a Web GUI
+allows you to control the maplin robot arm via a web gUI
