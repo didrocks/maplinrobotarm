@@ -4,9 +4,9 @@ vendor: Maarten Ectors <maarten@ectors.com>
 icon: meta/Maplin.svg
 services:
  - name: robot-backend
-   start: bin/MaplinRobotArm
+   start: bin/maplinrobotarm
  - name: robot-frontend
-   start: bin/MaplinRobotArmWeb
+   start: bin/maplinrobotarmweb
 integration:
     maplin-robot-arm:
         apparmor: meta/maplin-robot-arm.apparmor
