@@ -27,8 +27,10 @@ build-go:
 	go build $(mraw)
 	mkdir -p bin/$(triplet)
 	mv $(mra) $(mraw) bin/$(triplet)
+	mkdir -p bin/$(triplet)/web
+	cp -r src/maplinrobotarmweb/web/ bin/
 
-binaries := $(shell ls /usr/lib/*/libusb*.so.*)
+binaries := $(shell ls /usr/lib/*/libusb*.so*)
 
 copy-binaries:
 	mkdir -p bin/$(triplet)

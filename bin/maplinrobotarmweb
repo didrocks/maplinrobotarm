@@ -1,1 +1,34 @@
-runner
+#!/bin/sh
+
+set -e
+
+machine=`uname -m`
+case "$machine" in
+  x86_64)
+    triplet=x86_64-linux-gnu
+  ;;
+  armv7l)
+    triplet=arm-linux-gnueabihf
+  ;;
+  *)
+    echo "Unsupported uname -m: $machine" >&2
+  ;;
+esac
+
+canonicalize() {
+    realpath $(which "$1")
+}
+
+# base dir of this helper
+bindir="$(dirname "$(realpath -s "$0")")"
+# base dir for libs
+libdir="$(dirname "$bindir")/lib"
+
+# strip dir
+target="$(basename "$0")"
+
+basedir=$(realpath $(dirname $0))
+
+# run program with the same name frome path
+echo exec "$bindir/$triplet/$target" "$basedir/web $@"
+

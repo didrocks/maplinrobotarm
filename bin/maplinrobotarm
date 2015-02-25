@@ -1,1 +1,47 @@
-runner
+#!/bin/sh
+
+set -e
+
+machine=`uname -m`
+case "$machine" in
+  x86_64)
+    triplet=x86_64-linux-gnu
+  ;;
+  armv7l)
+    triplet=arm-linux-gnueabihf
+  ;;
+  *)
+    echo "Unsupported uname -m: $machine" >&2
+  ;;
+esac
+
+canonicalize() {
+    realpath $(which "$1")
+}
+
+# base dir of this helper
+bindir="$(dirname "$(realpath -s "$0")")"
+# base dir for libs
+libdir="$(dirname "$bindir")/lib"
+
+# strip dir
+target="$(basename "$0")"
+
+# full path to target, first hit in PATH before mangling
+#before="$(canonicalize "$target")"
+
+export PATH="$bindir/$triplet${PATH:+:$PATH}"
+export LD_LIBRARY_PATH="$libdir/$triplet${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+echo $PATH
+echo $LD_LIBRARY_PATH
+# full path to target, first hit in PATH after mangling
+#after="$(canonicalize "$target")"
+
+#if [ "$before" = "$after" ]; then
+#    echo "Redirection loop detected: $after" >&2
+#    exit 1
+#fi
+
+# run program with the same name from path
+sudo "$bindir/$triplet/$target" "$@"
+
