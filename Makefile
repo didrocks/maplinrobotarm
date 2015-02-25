@@ -1,5 +1,6 @@
 machine := $(shell uname -m)
-
+GOPATH := ${CURDIR}
+export GOPATH
 ifeq ($(machine),x86_64)
 triplet := x86_64-linux-gnu
 endif
@@ -22,13 +23,16 @@ build-go:
 	# not using "go install" as that would write to bin/$name which is
 	# where the arch-indep symlinks live
 	#GOARCH=arm make build-go
-	#GOARCH=arm make build-go machine=armv7l	
+	#GOARCH=arm make build-go machine=armv7l
+	
 	go build $(mra)
 	go build $(mraw)
 	mkdir -p bin/$(triplet)
 	mv $(mra) $(mraw) bin/$(triplet)
 	mkdir -p bin/$(triplet)/web
-	cp -r src/maplinrobotarmweb/web/ bin/
+	rm -rf public
+	cp -r src/maplinrobotarmweb/web/ .
+	mv web public
 
 binaries := $(shell ls /usr/lib/*/libusb*.so*)
 

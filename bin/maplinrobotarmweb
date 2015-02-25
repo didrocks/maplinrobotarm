@@ -28,7 +28,7 @@ libdir="$(dirname "$bindir")/lib"
 target="$(basename "$0")"
 
 basedir=$(realpath $(dirname $0))
-
+export MARTINI_ENV=production
 # run program with the same name frome path
-echo exec "$bindir/$triplet/$target" "$basedir/web $@"
+exec "$bindir/$triplet/$target" "$@"
 
