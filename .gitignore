@@ -2,7 +2,7 @@
 *.o
 *.a
 *.so
-
+/bin/web/*
 /lib/*
 # Folders
 _obj

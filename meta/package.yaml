@@ -1,5 +1,5 @@
 name: maplinrobotarm
-version: 1.0.7
+version: 1.0.10
 vendor: Maarten Ectors <maarten@ectors.com>
 icon: meta/maplin.svg
 services:

@@ -31,7 +31,7 @@ target="$(basename "$0")"
 #before="$(canonicalize "$target")"
 
 export PATH="$bindir/$triplet${PATH:+:$PATH}"
-export LD_LIBRARY_PATH="$libdir/$triplet${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="$bindir/$triplet:$libdir/$triplet${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 echo $PATH
 echo $LD_LIBRARY_PATH
 # full path to target, first hit in PATH after mangling
@@ -43,5 +43,5 @@ echo $LD_LIBRARY_PATH
 #fi
 
 # run program with the same name from path
-sudo "$bindir/$triplet/$target" "$@"
+sudo LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH "$bindir/$triplet/$target" "$@"
 

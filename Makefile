@@ -27,14 +27,16 @@ build-go:
 	
 	go build $(mra)
 	go build $(mraw)
-	mkdir -p bin/$(triplet)
-	mv $(mra) $(mraw) bin/$(triplet)
-	mkdir -p bin/$(triplet)/web
-	rm -rf public
-	cp -r src/maplinrobotarmweb/web/ .
-	mv web public
+	mkdir -p bin/x86_64-linux-gnu
+	mv $(mra) $(mraw) bin/x86_64-linux-gnu
+	GOARCH=arm GOARM=7 go build $(mraw)
+	GOARCH=arm GOARM=7 go build $(mra)
+	mkdir -p bin/arm-linux-gnueabihf
+	mv $(mra) $(mraw) bin/arm-linux-gnueabihf
+	rm -rf bin/web
+	cp -r src/maplinrobotarmweb/web/ bin
 
-binaries := $(shell ls /usr/lib/*/libusb*.so*)
+binaries := $(shell ls /usr/lib/*/libusb*.so* /lib/*/libusb*.so*)
 
 copy-binaries:
 	mkdir -p bin/$(triplet)

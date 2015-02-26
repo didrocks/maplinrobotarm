@@ -30,5 +30,6 @@ target="$(basename "$0")"
 basedir=$(realpath $(dirname $0))
 export MARTINI_ENV=production
 # run program with the same name frome path
-exec "$bindir/$triplet/$target" "$@"
+basedir=$(realpath $(dirname $0))
+exec "$bindir/$triplet/$target" "$basedir/web" "$@"
 
