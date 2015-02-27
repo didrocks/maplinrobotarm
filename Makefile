@@ -30,9 +30,11 @@ build-go:
 	mkdir -p bin/x86_64-linux-gnu
 	mv $(mra) $(mraw) bin/x86_64-linux-gnu
 	GOARCH=arm GOARM=7 go build $(mraw)
-	GOARCH=arm GOARM=7 go build $(mra)
+	# Todo fix libusb arm problem
+	#GOARCH=arm GOARM=7 go build $(mra)
 	mkdir -p bin/arm-linux-gnueabihf
-	mv $(mra) $(mraw) bin/arm-linux-gnueabihf
+	mv $(mraw) bin/arm-linux-gnueabihf
+	#mv $(mra) $(mraw) bin/arm-linux-gnueabihf
 	rm -rf bin/web
 	cp -r src/maplinrobotarmweb/web/ bin
 
