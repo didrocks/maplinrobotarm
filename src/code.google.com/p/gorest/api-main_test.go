@@ -73,7 +73,7 @@ func TestStress(t *testing.T) {
 }
 
 func TestServiceMeta(t *testing.T) {
-	if meta, found := restManager.serviceTypes["code.google.com/p/gorest/TypesService"]; !found {
+	if meta, found := restManager.serviceTypes["github.com/didrocks/gorest/TypesService"]; !found {
 		t.Error("Service Not registered correctly")
 	} else {
 		AssertEqual(meta.consumesMime, "application/json", "Service consumesMime", t)

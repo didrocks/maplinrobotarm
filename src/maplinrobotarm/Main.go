@@ -2,7 +2,7 @@
 package main
 
 import (
-	"code.google.com/p/gorest"
+	"github.com/didrocks/gorest"
 	"encoding/json"
 	"fmt"
 	"github.com/kylelemons/gousb/usb"

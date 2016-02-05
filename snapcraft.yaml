@@ -1,0 +1,23 @@
+name: maplinrobotarm
+version: 1.0.10
+# The vendor for the snap (replace 'Vendor <email@example.com>')
+vendor: Vendor <email@example.com>
+summary: something
+description: Foo bar baz
+icon: meta/maplin.svg
+
+services:
+  maplinrobotarm:
+   start: bin/maplinrobotarm
+   security-template: unconfined
+  maplinrobotarmweb:
+   start: bin/maplinrobotarmweb
+   security-template: unconfined
+
+parts:
+  maplinrobotarm:
+    plugin: go
+    source: src/maplinrobotarm
+  maplinrobotarmweb:
+    plugin: go
+    source: src/maplinrobotarmweb
